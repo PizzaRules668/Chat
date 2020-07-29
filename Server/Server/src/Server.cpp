@@ -5,7 +5,7 @@
 
 #pragma comment (lib, "ws2_32.lib")
 
-void main()
+int main()
 {
 	WSADATA wsData;
 	WORD ver = MAKEWORD(2, 2);
@@ -14,14 +14,14 @@ void main()
 	if (wsOk != 0)
 	{
 		std::cerr << "Can't Initialize winsock! Quitting" << std::endl;
-		return;
+		return 0;
 	}
 
 	SOCKET listening = socket(AF_INET, SOCK_STREAM, 0);
 	if (listening == INVALID_SOCKET)
 	{
 		std::cerr << "Can't create a socket! Quitting" << std::endl;
-		return;
+		return 0;
 	}
 
 	sockaddr_in hint;

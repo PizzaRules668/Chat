@@ -1,9 +1,38 @@
 #include <iostream>
 #include <string>
 #include <WS2tcpip.h>
+#include <thread>
+
 #pragma comment(lib, "ws2_32.lib")
 
-void main()
+void sender(std::string username, SOCKET sock)
+{
+	while (true)
+	{
+		std::string userInput;
+
+		std::getline(std::cin, userInput);
+
+		if (userInput.size() > 0)
+		{
+			std::string message = username + ":" + userInput;
+
+			int sendResult = send(sock, message.c_str(), message.size() + 1, 0);
+		}
+	}
+}
+
+void receiver(SOCKET sock, char* buf)
+{
+	ZeroMemory(buf, 4096);
+	int bytesReceived = recv(sock, buf, 4096, 0);
+	if (bytesReceived > 0)
+	{
+		std::cout << std::string(buf, 0, bytesReceived) << std::endl;
+	}
+}
+
+int main()
 {
 	std::string username;
 	std::cout << "What would you like to be called";
@@ -19,7 +48,7 @@ void main()
 	if (wsResult != 0)
 	{
 		std::cerr << "Can't start Winsock, Err #" << wsResult << std::endl;
-		return;
+		return 0;
 	}
 
 	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -27,7 +56,7 @@ void main()
 	{
 		std::cerr << "Can't create socket, Err #" << WSAGetLastError() << std::endl;
 		WSACleanup();
-		return;
+		return 0;
 	}
 
 	sockaddr_in hint;
@@ -41,35 +70,20 @@ void main()
 		std::cerr << "Can't connect to server, Err #" << WSAGetLastError() << std::endl;
 		closesocket(sock);
 		WSACleanup();
-		return;
+		return 0;
 	}
 
 	char buf[4096];
 	std::string userInput;
 	send(sock, usernameform.c_str(), usernameform.size(), 0);
 
-	do
-	{
-		std::getline(std::cin, userInput);
+	std::thread sender(sender, username, sock);
+	std::thread receiver(receiver, sock, buf);
 
-		if (userInput.size() > 0)
-		{
-			std::string message = username + ":" + userInput;
+	while (true);
 
-			int sendResult = send(sock, message.c_str(), message.size() + 1, 0);
-			if (sendResult != SOCKET_ERROR)
-			{
-				// Wait for response
-				ZeroMemory(buf, 4096);
-				int bytesReceived = recv(sock, buf, 4096, 0);
-				if (bytesReceived > 0)
-				{
-					std::cout << std::string(buf, 0, bytesReceived) << std::endl;
-				}
-			}
-		}
-
-	} while (true);
+	sender.join();
+	receiver.join();
 
 	closesocket(sock);
 	WSACleanup();
