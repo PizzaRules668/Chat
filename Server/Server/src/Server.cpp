@@ -2,11 +2,15 @@
 #include <WS2tcpip.h>
 #include <string>
 #include <sstream>
+#include <vector>
+#include <fstream>
 
 #pragma comment (lib, "ws2_32.lib")
 
 int main()
 {
+	std::vector<std::string> messages;
+
 	WSADATA wsData;
 	WORD ver = MAKEWORD(2, 2);
 
@@ -74,7 +78,6 @@ int main()
 				{
 					if (buf[0] == '\\')
 					{
-						// Is the command quit? 
 						std::string cmd = std::string(buf, bytesIn);
 						if (cmd == "\\quit")
 						{
@@ -93,6 +96,7 @@ int main()
 							std::ostringstream ss;
 							ss << buf;
 							std::string strOut = ss.str();
+							messages.push_back(strOut);
 
 							send(outSock, strOut.c_str(), strOut.size() + 1, 0);
 						}
@@ -116,6 +120,10 @@ int main()
 		FD_CLR(sock, &master);
 		closesocket(sock);
 	}
+
+	std::ofstream output_file("example.txt");
+	std::ostream_iterator<std::string> output_iterator(output_file, "\n");
+	std::copy(messages.begin(), messages.end(), output_iterator);
 
 	WSACleanup();
 

@@ -15,7 +15,7 @@ void sender(std::string username, SOCKET sock)
 
 		if (userInput.size() > 0)
 		{
-			std::string message = username + ":" + userInput;
+			std::string message = username + ":" + userInput + '\n';
 
 			int sendResult = send(sock, message.c_str(), message.size() + 1, 0);
 		}
@@ -24,18 +24,21 @@ void sender(std::string username, SOCKET sock)
 
 void receiver(SOCKET sock, char* buf)
 {
-	ZeroMemory(buf, 4096);
-	int bytesReceived = recv(sock, buf, 4096, 0);
-	if (bytesReceived > 0)
+	while (true)
 	{
-		std::cout << std::string(buf, 0, bytesReceived) << std::endl;
+		ZeroMemory(buf, 4096);
+		int bytesReceived = recv(sock, buf, 4096, 0);
+		if (bytesReceived > 0)
+		{
+			std::cout << std::string(buf, 0, bytesReceived) << std::endl;
+		}
 	}
 }
 
 int main()
 {
 	std::string username;
-	std::cout << "What would you like to be called";
+	std::cout << "What would you like to be called ";
 	std::cin >> username;
 	std::string usernameform = username + ": Joined the chat";
 
