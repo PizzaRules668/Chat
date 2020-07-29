@@ -121,7 +121,7 @@ int main()
 		closesocket(sock);
 	}
 
-	std::ofstream output_file("example.txt");
+	std::ofstream output_file("log.txt");
 	std::ostream_iterator<std::string> output_iterator(output_file, "\n");
 	std::copy(messages.begin(), messages.end(), output_iterator);
 

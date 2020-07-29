@@ -1,17 +1,8 @@
 # Basic Chat
 This is a basic chat that allows uses to send message between multiply people.
 
-### Prerequisites
-You will need Visual Studio or anything the can open  the .sln file.
-
 ### Installing
-
-After cloning the repository open the chat.sln file.
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
+Install the exe from the [Releases](https://github.com/PizzaRules668/Chat/releases) Tab in Github.
 
 ## Contributing
 
