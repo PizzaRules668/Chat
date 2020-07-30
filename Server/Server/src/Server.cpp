@@ -4,13 +4,19 @@
 #include <sstream>
 #include <vector>
 #include <fstream>
+
 #include "Message.cpp"
+#include "Command.cpp"
 
 #pragma comment (lib, "ws2_32.lib")
 
 int main()
 {
 	Message message;
+	
+	Command quit;
+	quit.command = "quit";
+	quit.execute = [](bool running) {running = false; };
 
 	std::vector<std::string> messages;
 
@@ -85,14 +91,9 @@ int main()
 
 				else
 				{
-					if (message.command)
+					if (true)
 					{
-						if (message.commandText == "quit")
-						{
-							running = false;
-							break;
-						}
-						continue;
+
 					}
 
 					for (int i = 0; i < master.fd_count; i++)

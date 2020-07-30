@@ -1,5 +1,6 @@
 #include <string>
 #include "Message.cpp"
+#include "E:/Scripts/Chat/Chat/Third Party/easycpp/tupple.h"
 
 class Command
 {

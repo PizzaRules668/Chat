@@ -19,7 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Command.cpp" />
     <ClCompile Include="src\Server.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Message.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
