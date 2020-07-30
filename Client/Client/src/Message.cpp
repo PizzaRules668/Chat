@@ -25,7 +25,7 @@ struct Message
 		return;
 	}
 
-	void sendMessage(SOCKET sock)
+	void sendProcessedMessage(SOCKET sock)
 	{
 		if (command)
 		{

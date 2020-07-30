@@ -3,7 +3,7 @@
 #include <WS2tcpip.h>
 #include <thread>
 #include <fstream>
-#include "Message.h"
+#include "Message.cpp"
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -21,7 +21,7 @@ void sender(SOCKET sock, Message message)
 			message.content = userInput;
 
 			message.process();
-			message.sendMessage(sock);
+			message.sendProcessedMessage(sock);
 		}
 	}
 }
