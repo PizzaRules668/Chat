@@ -8,10 +8,12 @@ struct Message
 {
 	std::string content, username;
 
-	int sendMessage(SOCKET sock)
+	void sendMessage(SOCKET sock)
 	{
 		std::string Message = username + ":" + content + "\n";
 
 		int sendResult = send(sock, Message.c_str(), Message.size() + 1, 0);
+
+		return;
 	}
 };

@@ -2,6 +2,7 @@
 #include <string>
 #include <WS2tcpip.h>
 #include <thread>
+#include <fstream>
 #include "Message.h"
 
 #pragma comment(lib, "ws2_32.lib")
@@ -38,18 +39,34 @@ void receiver(SOCKET sock, char* buf)
 
 int main()
 {
+
 	Message message;
 
 	std::string username;
+
+	std::fstream config;
+	config.open("config.txt", std::ios::out | std::ios::in);
+
+	std::string ipAddress;// = "127.0.0.1";
+	int port = 54000;
+
+	if (config.is_open())
+	{
+		std::getline(config, ipAddress);
+		if (ipAddress.size() == 0)
+		{
+			std::cout << "Please Put IP Address In config.txt" << std::endl;
+			system("pause");
+			exit(0);
+		}
+	}
+
 	std::cout << "What would you like to be called ";
 	std::cin >> username;
 
 	message.username = username;
 
 	std::string usernameform = username + ": Joined the chat";
-
-	std::string ipAddress = "127.0.0.1";
-	int port = 54000;
 
 	WSAData data;
 	WORD ver = MAKEWORD(2, 2);
