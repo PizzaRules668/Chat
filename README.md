@@ -22,3 +22,7 @@ See also the list of [contributors](https://github.com/Pizzarules668/chat/contri
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+
+## Built With
+
+* [easycpp](https://github.com/LUCIF680/easycpp) - Passing attributes to the command function
