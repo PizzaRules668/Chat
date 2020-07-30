@@ -2,10 +2,11 @@
 #include <string>
 #include <WS2tcpip.h>
 #include <thread>
+#include "Message.h"
 
 #pragma comment(lib, "ws2_32.lib")
 
-void sender(std::string username, SOCKET sock)
+void sender(SOCKET sock, Message message)
 {
 	while (true)
 	{
@@ -13,11 +14,11 @@ void sender(std::string username, SOCKET sock)
 
 		std::getline(std::cin, userInput);
 
+
 		if (userInput.size() > 0)
 		{
-			std::string message = username + ":" + userInput + '\n';
-
-			int sendResult = send(sock, message.c_str(), message.size() + 1, 0);
+			message.content = userInput;
+			message.sendMessage(sock);
 		}
 	}
 }
@@ -37,9 +38,14 @@ void receiver(SOCKET sock, char* buf)
 
 int main()
 {
+	Message message;
+
 	std::string username;
 	std::cout << "What would you like to be called ";
 	std::cin >> username;
+
+	message.username = username;
+
 	std::string usernameform = username + ": Joined the chat";
 
 	std::string ipAddress = "127.0.0.1";
@@ -80,7 +86,7 @@ int main()
 	std::string userInput;
 	send(sock, usernameform.c_str(), usernameform.size(), 0);
 
-	std::thread sender(sender, username, sock);
+	std::thread sender(sender, sock, message);
 	std::thread receiver(receiver, sock, buf);
 
 	while (true);
