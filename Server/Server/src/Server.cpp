@@ -98,7 +98,7 @@ int main()
 							std::string strOut = ss.str();
 							messages.push_back(strOut);
 
-							send(outSock, strOut.c_str(), strOut.size() + 1, 0);
+							send(outSock, strOut.c_str(), strOut.size(), 0);
 						}
 					}
 				}

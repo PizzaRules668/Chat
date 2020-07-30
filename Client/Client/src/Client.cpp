@@ -19,6 +19,8 @@ void sender(SOCKET sock, Message message)
 		if (userInput.size() > 0)
 		{
 			message.content = userInput;
+
+			message.process();
 			message.sendMessage(sock);
 		}
 	}
