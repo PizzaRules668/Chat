@@ -4,11 +4,14 @@
 #include <sstream>
 #include <vector>
 #include <fstream>
+#include "Message.cpp"
 
 #pragma comment (lib, "ws2_32.lib")
 
 int main()
 {
+	Message message;
+
 	std::vector<std::string> messages;
 
 	WSADATA wsData;
@@ -69,22 +72,26 @@ int main()
 				ZeroMemory(buf, 4096);
 
 				int bytesIn = recv(sock, buf, 4096, 0);
+
+				message.process();
+
+				
+
 				if (bytesIn <= 0)
 				{
 					closesocket(sock);
 					FD_CLR(sock, &master);
 				}
+
 				else
 				{
-					if (buf[0] == '\\')
+					if (message.command)
 					{
-						std::string cmd = std::string(buf, bytesIn);
-						if (cmd == "\\quit")
+						if (message.commandText == "quit")
 						{
 							running = false;
 							break;
 						}
-
 						continue;
 					}
 
