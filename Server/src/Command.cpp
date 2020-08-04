@@ -1,19 +1,20 @@
 #include <string>
 #include "Message.cpp"
-#include "E:/Scripts/Chat/Chat/Third Party/easycpp/tupple.h"
+#include "tupple.h"
 
-class Command
+struct Command
 {
-public:
 	std::string command;
 	Message message;
-	void(*execute)();
+	easycpp::Tupple args;
+
+	void(*execute)(easycpp::Tupple args1);
 
 	void checkForCommand()
 	{
 		if (message.content == command)
 		{
-			execute();
+			execute(args);
 		}
 	}
 };

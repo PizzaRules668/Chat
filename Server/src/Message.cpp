@@ -2,8 +2,6 @@
 #include <string>
 #include <WS2tcpip.h>
 
-#pragma once
-
 struct Message
 {
 	std::string content, commandText;

@@ -5,10 +5,20 @@
 #include <vector>
 #include <fstream>
 
-#include "Message.cpp"
-#include "Command.cpp"
+#include "Message.h"
+#include "Command.h"
+#include "tupple.h"
 
 #pragma comment (lib, "ws2_32.lib")
+
+bool running = true;
+
+void quit(easycpp::Tupple args)
+{
+	running = false;
+
+	return;
+}
 
 int main()
 {
@@ -16,7 +26,8 @@ int main()
 	
 	Command quit;
 	quit.command = "quit";
-	quit.execute = [](bool running) {running = false; };
+	easycpp::Tupple quitargs = { running };
+	quit.execute = [&](auto quitargs) {quit(quitargs); };
 
 	std::vector<std::string> messages;
 
@@ -51,7 +62,6 @@ int main()
 
 	FD_SET(listening, &master);
 
-	bool running = true;
 
 	std::cout << "Started";
 
