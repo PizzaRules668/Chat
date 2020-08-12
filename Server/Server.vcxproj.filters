@@ -26,11 +26,5 @@
     <ClInclude Include="src\Message.cpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Message.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Command.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

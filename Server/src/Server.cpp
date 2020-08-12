@@ -5,29 +5,25 @@
 #include <vector>
 #include <fstream>
 
-#include "Message.h"
-#include "Command.h"
-#include "tupple.h"
+#include "Message.cpp"
+#include "Command.cpp"
 
 #pragma comment (lib, "ws2_32.lib")
 
-bool running = true;
-
-void quit(easycpp::Tupple args)
+std::string recvToString(char *buf)
 {
-	running = false;
+	std::ostringstream ss;
+	ss << buf;
+	std::string strOut = ss.str();
 
-	return;
+	return strOut;
 }
 
 int main()
 {
+	bool running = true;
+
 	Message message;
-	
-	Command quit;
-	quit.command = "quit";
-	easycpp::Tupple quitargs = { running };
-	quit.execute = [&](auto quitargs) {quit(quitargs); };
 
 	std::vector<std::string> messages;
 
@@ -63,7 +59,7 @@ int main()
 	FD_SET(listening, &master);
 
 
-	std::cout << "Started";
+	std::cout << "Started" << std::endl;
 
 	while (running)
 	{
@@ -89,8 +85,8 @@ int main()
 
 				int bytesIn = recv(sock, buf, 4096, 0);
 
+				message.content = recvToString(buf);
 				message.process();
-
 				
 
 				if (bytesIn <= 0)
@@ -101,19 +97,12 @@ int main()
 
 				else
 				{
-					if (true)
-					{
-
-					}
-
 					for (int i = 0; i < master.fd_count; i++)
 					{
 						SOCKET outSock = master.fd_array[i];
 						if (outSock != listening && outSock != sock)
 						{
-							std::ostringstream ss;
-							ss << buf;
-							std::string strOut = ss.str();
+							std::string strOut = recvToString(buf);
 							messages.push_back(strOut);
 
 							send(outSock, strOut.c_str(), strOut.size(), 0);

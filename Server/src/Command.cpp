@@ -1,14 +1,18 @@
+#include <vector>
 #include <string>
+#include <variant>
+
 #include "Message.cpp"
-#include "tupple.h"
+
+#pragma once
 
 struct Command
 {
 	std::string command;
 	Message message;
-	easycpp::Tupple args;
+	std::vector<std::variant<std::string, bool, std::vector<std::string>>> args;
 
-	void(*execute)(easycpp::Tupple args1);
+	void(*execute)(std::vector<std::variant<std::string, bool, std::vector<std::string>>> args);
 
 	void checkForCommand()
 	{

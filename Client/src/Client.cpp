@@ -3,25 +3,26 @@
 #include <WS2tcpip.h>
 #include <thread>
 #include <fstream>
+
 #include "Message.cpp"
 
 #pragma comment(lib, "ws2_32.lib")
 
 void sender(SOCKET sock, Message message)
 {
+	std::string userInput;
+
 	while (true)
 	{
-		std::string userInput;
+		std::cout << ">";
 
 		std::getline(std::cin, userInput);
-
 
 		if (userInput.size() > 0)
 		{
 			message.content = userInput;
 
-			message.process();
-			message.sendProcessedMessage(sock);
+			message.process(sock);
 		}
 	}
 }
@@ -41,7 +42,6 @@ void receiver(SOCKET sock, char* buf)
 
 int main()
 {
-
 	Message message;
 
 	std::string username;
@@ -49,7 +49,7 @@ int main()
 	std::fstream config;
 	config.open("config.txt", std::ios::out | std::ios::in);
 
-	std::string ipAddress;// = "127.0.0.1";
+	std::string ipAddress = "127.0.0.1";
 	int port = 54000;
 
 	if (config.is_open())
@@ -58,8 +58,7 @@ int main()
 		if (ipAddress.size() == 0)
 		{
 			std::cout << "Please Put IP Address In config.txt" << std::endl;
-			system("pause");
-			exit(0);
+			return 0;
 		}
 	}
 

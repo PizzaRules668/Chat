@@ -8,32 +8,16 @@ struct Message
 {
 	std::string content, username;
 
-	bool command;
-
-	void process()
+	void process(SOCKET sock)
 	{
-		command = false;
-
 		if (content.rfind("/", 0) == 0)
-		{
-			command = true;
-		}
-		if (content.rfind("/", 0) != 0)
-		{
-			command = false;
-		}
-		return;
-	}
-
-	void sendProcessedMessage(SOCKET sock)
-	{
-		if (command)
 		{
 			send(sock, content.c_str(), content.size(), 0);
 		}
-		if (!command)
+
+		if (content.rfind("/", 0) != 0)
 		{
-			std::string message = username + ":" + content + "\n";
+			std::string message = "\n" + username + ":" + content;
 
 			int sendResult = send(sock, message.c_str(), message.size(), 0);
 
