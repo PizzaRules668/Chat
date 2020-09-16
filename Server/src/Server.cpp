@@ -2,13 +2,44 @@
 #include <WS2tcpip.h>
 #include <string>
 #include <sstream>
-#include <vector>
 #include <fstream>
+#include <stdlib.h>
+#include <vector>
+#include <variant>
+
+
+#include "Message.cpp"
+#include "Command.cpp"
 
 #pragma comment (lib, "ws2_32.lib")
 
+void quit(std::vector<std::variant<int, std::string, bool, Message::Messages>> args)
+{
+	std::cout << "Stopping" << std::endl;
+
+	exit(0);
+}
+
+std::string recvToString(char *buf)
+{
+	std::ostringstream ss;
+	ss << buf;
+	std::string strOut = ss.str();
+
+	return strOut;
+}
+
 int main()
 {
+	Message::Messages message;
+	Message::Command QuitCommand;
+
+	QuitCommand.command = "quit";
+	QuitCommand.message = message;
+
+	QuitCommand.execute = quit;
+
+
 	std::vector<std::string> messages;
 
 	WSADATA wsData;
@@ -42,11 +73,10 @@ int main()
 
 	FD_SET(listening, &master);
 
-	bool running = true;
 
-	std::cout << "Started";
+	std::cout << "Started" << std::endl;
 
-	while (running)
+	while (true)
 	{
 
 		fd_set copy = master;
@@ -69,33 +99,29 @@ int main()
 				ZeroMemory(buf, 4096);
 
 				int bytesIn = recv(sock, buf, 4096, 0);
+
+				message.content = recvToString(buf);
+				message.process();
+				
+				std::cout << message.content << std::endl;
+
+				QuitCommand.message = message;
+				QuitCommand.checkForCommand();
+
 				if (bytesIn <= 0)
 				{
 					closesocket(sock);
 					FD_CLR(sock, &master);
 				}
+
 				else
 				{
-					if (buf[0] == '\\')
-					{
-						std::string cmd = std::string(buf, bytesIn);
-						if (cmd == "\\quit")
-						{
-							running = false;
-							break;
-						}
-
-						continue;
-					}
-
 					for (int i = 0; i < master.fd_count; i++)
 					{
 						SOCKET outSock = master.fd_array[i];
 						if (outSock != listening && outSock != sock)
 						{
-							std::ostringstream ss;
-							ss << buf;
-							std::string strOut = ss.str();
+							std::string strOut = recvToString(buf);
 							messages.push_back(strOut);
 
 							send(outSock, strOut.c_str(), strOut.size(), 0);
