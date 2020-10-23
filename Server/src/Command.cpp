@@ -7,12 +7,12 @@
 
 #pragma once
 
-namespace Message
+namespace Server
 {
 	struct Args
 	{
 		std::string string;
-		Message::Messages message;
+		Server::Messages message;
 		std::vector<std::string> usernames;
 		std::vector<std::string> ipAddress;
 		std::string command;
@@ -30,7 +30,7 @@ namespace Message
 	{
 		Args args;
 
-		Message::returntype results;
+		Server::returntype results;
 
 		returntype(*execute)(Args args);
 

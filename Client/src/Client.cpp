@@ -8,7 +8,7 @@
 
 #pragma comment(lib, "ws2_32.lib")
 
-void sender(SOCKET sock, Message message)
+void sender(SOCKET sock, Client message)
 {
 	std::string userInput;
 
@@ -42,7 +42,7 @@ void receiver(SOCKET sock, char* buf)
 
 int main()
 {
-	Message message;
+	Client message;
 
 	std::string username;
 
