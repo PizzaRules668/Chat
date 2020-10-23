@@ -9,7 +9,7 @@
 #include <WinSock2.h>
 
 #include "Message.cpp"
-#include "Command.cpp"
+#include "Command.h"
 
 #pragma comment (lib, "ws2_32.lib")
 
@@ -35,7 +35,7 @@ Server::returntype getUsers(Server::Args args)
 	return returnvalue;
 }
 
-Server::returntype Onconnect(Server::Args args)
+Server::returntype onConnect(Server::Args args)
 {
 	Server::returntype returnvalue;
 	std::string content = args.message.content;
@@ -94,25 +94,18 @@ std::string ipFromSock(SOCKET sock)
 int main()
 {
 	Server::Messages message;
-	Server::Command QuitCommand;
-	Server::Command ConnectCommand;
-	Server::Command ActiveUserCommand;
-
-	QuitCommand.args.command = "quit";
-	QuitCommand.execute = quit;
+	Server::Command QuitCommand("quit", quit);
+	Server::Command ConnectCommand("connect", onConnect);
+	Server::Command ActiveUserCommand("active", getUsers);
 
 	std::vector<std::string> users;
 	std::vector<std::string> ip;
 	std::vector<std::string> messages;
 
-	ConnectCommand.args.command = "connect";
 	ConnectCommand.args.usernames = users;
 	ConnectCommand.args.ipAddress = ip;
-	ConnectCommand.execute = Onconnect;
 
-	ActiveUserCommand.args.command = "active";
 	ActiveUserCommand.args.usernames = users;
-	ActiveUserCommand.execute = getUsers;
 
 	WSADATA wsData;
 	WORD ver = MAKEWORD(2, 2);
