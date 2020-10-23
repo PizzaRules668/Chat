@@ -1,28 +1,55 @@
 #include <vector>
 #include <string>
 #include <variant>
+#include <sstream>
 
 #include "Message.cpp"
 
 #pragma once
 
-namespace Message
+namespace Server
 {
+	struct Args
+	{
+		std::string string;
+		Server::Messages message;
+		std::vector<std::string> usernames;
+		std::vector<std::string> ipAddress;
+		std::string command;
+	};
+
+	struct returntype
+	{
+		std::string usernames;
+		std::string ipAddress;
+
+		bool ran = false;
+	};
+
 	struct Command
 	{
-		std::string command;
-		Message::Messages message;
-		std::vector<std::variant<int, std::string, bool, Message::Messages>> args;
+		Args args;
 
-		void(*execute)(std::vector<std::variant<int, std::string, bool, Message::Messages>> args);
+		Server::returntype results;
+
+		returntype(*execute)(Args args);
 
 		void checkForCommand()
 		{
-			if (message.content == command)
-			{
-				std::cout << "Running function" << std::endl;
+			std::string content = args.message.content;
+			std::istringstream ss(content);
 
-				execute(args);
+			std::vector<std::string> result;
+
+			std::istringstream iss(content);
+			for (std::string s; iss >> s; )
+				result.push_back(s);
+
+			if (result.at(0) == args.command)
+			{
+				results = execute(args);
+
+				results.ran = true;
 			}
 		}
 	};

@@ -8,7 +8,7 @@
 
 #pragma comment(lib, "ws2_32.lib")
 
-void sender(SOCKET sock, Message message)
+void sender(SOCKET sock, Client message)
 {
 	std::string userInput;
 
@@ -42,7 +42,7 @@ void receiver(SOCKET sock, char* buf)
 
 int main()
 {
-	Message message;
+	Client message;
 
 	std::string username;
 
@@ -67,7 +67,7 @@ int main()
 
 	message.username = username;
 
-	std::string usernameform = username + ": Joined the chat";
+	std::string onConnect = "/connect " + username + ":";
 
 	WSAData data;
 	WORD ver = MAKEWORD(2, 2);
@@ -102,7 +102,7 @@ int main()
 
 	char buf[4096];
 	std::string userInput;
-	send(sock, usernameform.c_str(), usernameform.size(), 0);
+	send(sock, onConnect.c_str(), onConnect.size(), 0);
 
 	std::thread sender(sender, sock, message);
 	std::thread receiver(receiver, sock, buf);

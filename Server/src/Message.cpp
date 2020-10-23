@@ -4,18 +4,22 @@
 
 #pragma once
 
-namespace Message
+namespace Server
 {
 	struct Messages
 	{
 		std::string content;
+		bool isCommand;
 
 		void process()
 		{
 			if (content.rfind("/", 0) == 0)
 			{
 				content.replace(0, 1, "");
+				isCommand = true;
 			}
+			else
+				isCommand = false;
 			return;
 		}
 	};

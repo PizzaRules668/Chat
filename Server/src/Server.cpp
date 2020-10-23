@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <WS2tcpip.h>
 #include <string>
 #include <sstream>
@@ -6,21 +6,64 @@
 #include <stdlib.h>
 #include <vector>
 #include <variant>
-
+#include <WinSock2.h>
 
 #include "Message.cpp"
 #include "Command.cpp"
 
 #pragma comment (lib, "ws2_32.lib")
 
-void quit(std::vector<std::variant<int, std::string, bool, Message::Messages>> args)
+Server::returntype quit(Server::Args args)
 {
+	Server::returntype returnvalue;
 	std::cout << "Stopping" << std::endl;
 
 	exit(0);
+	return returnvalue;
 }
 
-std::string recvToString(char *buf)
+Server::returntype getUsers(Server::Args args)
+{
+	Server::returntype returnvalue;
+	std::string users;
+
+	for (std::string i : args.usernames)
+		users = i + "\n";
+
+	returnvalue.usernames = users;
+
+	return returnvalue;
+}
+
+Server::returntype Onconnect(Server::Args args)
+{
+	Server::returntype returnvalue;
+	std::string content = args.message.content;
+	std::string splitAt = ":";
+	std::string users;
+	std::string ipAddress;
+	std::istringstream ss(content);
+	std::string username;
+	std::string ip;
+	std::string word;
+
+	do {
+		ss >> word;
+
+		size_t pos = 0;
+
+		while ((pos = word.find(splitAt)) != std::string::npos) {
+			username = word.substr(0, pos);
+			word.erase(0, pos + splitAt.length());
+		}
+
+	} while (ss);
+	returnvalue.usernames = username;
+
+	return returnvalue;
+}
+
+std::string recvToString(char* buf)
 {
 	std::ostringstream ss;
 	ss << buf;
@@ -29,18 +72,47 @@ std::string recvToString(char *buf)
 	return strOut;
 }
 
+std::string ipFromSock(SOCKET sock)
+{
+	sockaddr_in addr;
+	int addrSize = sizeof(addr);
+	char addrIP[INET_ADDRSTRLEN];
+	std::string addrIPString;
+
+	getpeername(sock, (sockaddr*)&addr, &addrSize);
+	inet_ntop(AF_INET, &(addr.sin_addr), addrIP, INET_ADDRSTRLEN);
+
+	for (char i : addrIP)
+		if (addrIPString.size() == 9)
+			break;
+		else
+			addrIPString += i;
+
+	return addrIPString;
+}
+
 int main()
 {
-	Message::Messages message;
-	Message::Command QuitCommand;
+	Server::Messages message;
+	Server::Command QuitCommand;
+	Server::Command ConnectCommand;
+	Server::Command ActiveUserCommand;
 
-	QuitCommand.command = "quit";
-	QuitCommand.message = message;
-
+	QuitCommand.args.command = "quit";
 	QuitCommand.execute = quit;
 
-
+	std::vector<std::string> users;
+	std::vector<std::string> ip;
 	std::vector<std::string> messages;
+
+	ConnectCommand.args.command = "connect";
+	ConnectCommand.args.usernames = users;
+	ConnectCommand.args.ipAddress = ip;
+	ConnectCommand.execute = Onconnect;
+
+	ActiveUserCommand.args.command = "active";
+	ActiveUserCommand.args.usernames = users;
+	ActiveUserCommand.execute = getUsers;
 
 	WSADATA wsData;
 	WORD ver = MAKEWORD(2, 2);
@@ -62,7 +134,7 @@ int main()
 	sockaddr_in hint;
 	hint.sin_family = AF_INET;
 	hint.sin_port = htons(54000);
-	hint.sin_addr.S_un.S_addr = INADDR_ANY; 
+	hint.sin_addr.S_un.S_addr = INADDR_ANY;
 
 	bind(listening, (sockaddr*)&hint, sizeof(hint));
 
@@ -73,14 +145,12 @@ int main()
 
 	FD_SET(listening, &master);
 
-
 	std::cout << "Started" << std::endl;
 
 	while (true)
 	{
-
 		fd_set copy = master;
-		
+
 		int socketCount = select(0, &copy, nullptr, nullptr, nullptr);
 
 		for (int i = 0; i < socketCount; i++)
@@ -91,6 +161,12 @@ int main()
 			{
 				SOCKET client = accept(listening, nullptr, nullptr);
 
+				if (client != INVALID_SOCKET)
+				{
+					std::string addrIP = ipFromSock(client);
+
+					ip.push_back(addrIP);
+				}
 				FD_SET(client, &master);
 			}
 			else
@@ -102,18 +178,54 @@ int main()
 
 				message.content = recvToString(buf);
 				message.process();
-				
+
 				std::cout << message.content << std::endl;
 
-				QuitCommand.message = message;
-				QuitCommand.checkForCommand();
+				if (message.isCommand)
+				{
+					QuitCommand.args.message = message;
+					QuitCommand.checkForCommand();
+
+					ConnectCommand.args.message = message;
+					ConnectCommand.checkForCommand();
+
+					if (ConnectCommand.results.ran)
+					{
+						users.push_back(ConnectCommand.results.usernames);
+						std::cout << ConnectCommand.results.usernames << std::endl;
+
+						ConnectCommand.results.usernames = "";
+					}
+
+					ActiveUserCommand.args.message = message;
+					ActiveUserCommand.args.usernames = users;
+					ActiveUserCommand.checkForCommand();
+
+					if (ActiveUserCommand.results.ran)
+					{
+						for (std::string line : users)
+							send(sock, line.c_str(), line.size() + 1, 0);
+
+						ActiveUserCommand.results.ran = false;
+					}
+				}
 
 				if (bytesIn <= 0)
 				{
+					std::string addrIP = ipFromSock(sock);
+
+					for (int i = 0; i < ip.size(); i++)
+					{
+						if (ip.at(i) == addrIP)
+						{
+							ip.erase(ip.begin(), ip.begin() + i);
+							users.erase(users.begin(), users.begin() + i);
+						}
+					}
+
 					closesocket(sock);
 					FD_CLR(sock, &master);
 				}
-
 				else
 				{
 					for (int i = 0; i < master.fd_count; i++)
@@ -123,8 +235,8 @@ int main()
 						{
 							std::string strOut = recvToString(buf);
 							messages.push_back(strOut);
-
-							send(outSock, strOut.c_str(), strOut.size(), 0);
+							if (message.isCommand == false)
+								send(outSock, strOut.c_str(), strOut.size(), 0);
 						}
 					}
 				}
