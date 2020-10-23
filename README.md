@@ -8,6 +8,7 @@ Put The IP address of the server you want to connect to in the config.txt. The c
 ## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+[Trello Board](https://trello.com/invite/b/kMw0bHmy/c40a3ca6531c30b3a048fe5a9823a07a/text-chat)
 
 ### Versioning
 
