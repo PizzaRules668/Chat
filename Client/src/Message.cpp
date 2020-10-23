@@ -4,7 +4,7 @@
 
 #pragma once
 
-struct Message
+struct Client
 {
 	std::string content, username;
 
