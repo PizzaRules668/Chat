@@ -45,12 +45,15 @@ int main()
 	Client message;
 
 	std::string username;
+	std::string ipAddress;
+	int port = 54000;
 
+#if defined(_DEBUG)
+	ipAddress = "127.0.0.1";
+#elif defined(_RELEASE)
 	std::fstream config;
 	config.open("config.txt", std::ios::out | std::ios::in);
 
-	std::string ipAddress = "127.0.0.1";
-	int port = 54000;
 
 	if (config.is_open())
 	{
@@ -61,6 +64,7 @@ int main()
 			return 0;
 		}
 	}
+#endif
 
 	std::cout << "What would you like to be called ";
 	std::cin >> username;

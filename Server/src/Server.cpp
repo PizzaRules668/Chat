@@ -83,7 +83,7 @@ std::string ipFromSock(SOCKET sock)
 	inet_ntop(AF_INET, &(addr.sin_addr), addrIP, INET_ADDRSTRLEN);
 
 	for (char i : addrIP)
-		if (addrIPString.size() == 9)
+		if (addrIP == " ")
 			break;
 		else
 			addrIPString += i;
@@ -264,6 +264,6 @@ int main()
 	std::copy(messages.begin(), messages.end(), output_iterator);
 
 	WSACleanup();
-
-	system("pause");
+	
+	return 0;
 }

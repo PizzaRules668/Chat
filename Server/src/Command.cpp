@@ -11,6 +11,7 @@ namespace Server
 {
 	struct Args
 	{
+		SOCKET sock;
 		std::string string;
 		Server::Messages message;
 		std::vector<std::string> usernames;
