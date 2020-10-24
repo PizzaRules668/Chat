@@ -6,8 +6,8 @@ Install the exe from the [Releases](https://github.com/PizzaRules668/Chat/releas
 Put The IP address of the server you want to connect to in the config.txt. The config file will be made when you run Client.exe for the first time. 
 
 ## Contributing
-
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+<br>
 [Trello Board](https://trello.com/invite/b/kMw0bHmy/c40a3ca6531c30b3a048fe5a9823a07a/text-chat)
 
 ### Versioning
