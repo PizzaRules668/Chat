@@ -258,5 +258,5 @@ int main()
 
 	WSACleanup();
 
-	system("pause");
+	return 0;
 }
