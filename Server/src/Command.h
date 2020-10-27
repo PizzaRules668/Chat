@@ -9,11 +9,15 @@
 
 namespace Server
 {
-	struct Args
+	class Args
 	{
+	public:
 		std::vector<std::string> usernames;
 		std::vector<std::string> ipAddress;
+		std::vector<std::string> oped;
+
 		Messages message;
+		Args(std::vector<std::string> usernamesInput, std::vector<std::string> ipAddressInput, std::vector<std::string> opedInput, Messages messageInput);
 	};
 
 	struct returntype
@@ -21,20 +25,19 @@ namespace Server
 		std::string usernames;
 		std::string ipAddress;
 
-		bool ran = false;
+		bool ran;
 	};
 
 	class Command
 	{
-	public:
-		Args args;
-		std::string command;
-		Server::returntype results;
+	private:
+		std::string commandName;
 		returntype(*execute)(Args args);
 
-		void checkForCommand();
+	public:
+		returntype checkForCommand(Args args);
 
-		Command(std::string commandInput, returntype(*executeInput)(Args args));
+		Command(std::string command, returntype(*executeInput)(Args args));
 		~Command();
 	};
 }

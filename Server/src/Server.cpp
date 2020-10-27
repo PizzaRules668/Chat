@@ -15,29 +15,29 @@
 
 Server::returntype quit(Server::Args args)
 {
-	Server::returntype returnvalue;
+	Server::returntype returnValue;
 	std::cout << "Stopping" << std::endl;
 
 	exit(0);
-	return returnvalue;
+	return returnValue;
 }
 
 Server::returntype getUsers(Server::Args args)
 {
-	Server::returntype returnvalue;
+	Server::returntype returnValue;
 	std::string users;
 
 	for (std::string i : args.usernames)
 		users = i + "\n";
 
-	returnvalue.usernames = users;
+	returnValue.usernames = users;
 
-	return returnvalue;
+	return returnValue;
 }
 
 Server::returntype onConnect(Server::Args args)
 {
-	Server::returntype returnvalue;
+	Server::returntype returnValue;
 	std::string content = args.message.content;
 	std::string splitAt = ":";
 	std::string users;
@@ -58,9 +58,9 @@ Server::returntype onConnect(Server::Args args)
 		}
 
 	} while (ss);
-	returnvalue.usernames = username;
+	returnValue.usernames = username;
 
-	return returnvalue;
+	return returnValue;
 }
 
 std::string recvToString(char* buf)
@@ -98,14 +98,10 @@ int main()
 	Server::Command ConnectCommand("connect", onConnect);
 	Server::Command ActiveUserCommand("active", getUsers);
 
+	std::vector<std::string> oped = { "Colin" };
 	std::vector<std::string> users;
 	std::vector<std::string> ip;
 	std::vector<std::string> messages;
-
-	ConnectCommand.args.usernames = users;
-	ConnectCommand.args.ipAddress = ip;
-
-	ActiveUserCommand.args.usernames = users;
 
 	WSADATA wsData;
 	WORD ver = MAKEWORD(2, 2);
@@ -172,35 +168,25 @@ int main()
 				message.content = recvToString(buf);
 				message.process();
 
+				Server::Args args(users, ip, oped, message);
+
 				std::cout << message.content << std::endl;
 
-				if (message.isCommand)
+				if (message.command)
 				{
-					QuitCommand.args.message = message;
-					QuitCommand.checkForCommand();
+					Server::returntype quitReturn = QuitCommand.checkForCommand(args);
+					Server::returntype connectReturn = ConnectCommand.checkForCommand(args);
+					Server::returntype activeReturn = ActiveUserCommand.checkForCommand(args);
 
-					ConnectCommand.args.message = message;
-					ConnectCommand.checkForCommand();
-
-					if (ConnectCommand.results.ran)
+					if (connectReturn.ran)
 					{
-						users.push_back(ConnectCommand.results.usernames);
-						std::cout << ConnectCommand.results.usernames << std::endl;
-
-						ConnectCommand.results.usernames = "";
+						users.push_back(connectReturn.usernames);
+						std::cout << connectReturn.usernames << std::endl;
 					}
 
-					ActiveUserCommand.args.message = message;
-					ActiveUserCommand.args.usernames = users;
-					ActiveUserCommand.checkForCommand();
-
-					if (ActiveUserCommand.results.ran)
-					{
+					if (activeReturn.ran)
 						for (std::string line : users)
 							send(sock, line.c_str(), line.size() + 1, 0);
-
-						ActiveUserCommand.results.ran = false;
-					}
 				}
 
 				if (bytesIn <= 0)
@@ -228,7 +214,7 @@ int main()
 						{
 							std::string strOut = recvToString(buf);
 							messages.push_back(strOut);
-							if (message.isCommand == false)
+							if (message.command == false)
 								send(outSock, strOut.c_str(), strOut.size(), 0);
 						}
 					}

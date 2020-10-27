@@ -1,28 +1,38 @@
 #include "Command.h"
 
-Server::Command::Command(std::string commandInput, returntype(*executeInput)(Args args))
+Server::Args::Args(std::vector<std::string> usernamesInput, std::vector<std::string> ipAddressInput, std::vector<std::string> opedInput, Messages messageInput)
 {
-	execute = executeInput;
-	command = commandInput;
+	usernames = usernamesInput;
+	ipAddress = ipAddressInput;
+	oped = opedInput;
+	message = messageInput;
 }
 
-Server::Command::~Command(){}
-
-void Server::Command::checkForCommand()
+Server::Command::Command(std::string command, returntype(*executeInput)(Args args))
 {
+	execute = executeInput;
+	commandName = command;
+}
+
+Server::Command::~Command() {}
+
+Server::returntype Server::Command::checkForCommand(Args args)
+{
+	Server::returntype results;
 	std::string content = args.message.content;
 	std::istringstream ss(content);
 
-	std::vector<std::string> result;
+	std::vector<std::string> enteredCommand;
 
 	std::istringstream iss(content);
 	for (std::string s; iss >> s;)
-		result.push_back(s);
+		enteredCommand.push_back(s);
 
-	if (result.at(0) == command)
+	if (enteredCommand.at(0) == commandName)
 	{
 		results = execute(args);
 
 		results.ran = true;
 	}
+	return results;
 }

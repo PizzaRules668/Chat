@@ -9,17 +9,17 @@ namespace Server
 	struct Messages
 	{
 		std::string content;
-		bool isCommand;
+		bool command;
 
 		void process()
 		{
 			if (content.rfind("/", 0) == 0)
 			{
 				content.replace(0, 1, "");
-				isCommand = true;
+				command = true;
 			}
 			else
-				isCommand = false;
+				command = false;
 			return;
 		}
 	};
