@@ -13,6 +13,27 @@
 
 #pragma comment (lib, "ws2_32.lib")
 
+std::vector<std::string> splitAt(std::string content, char split)
+{
+	std::vector<std::string> strings;
+
+	std::string temp;
+
+	for (char i : content)
+	{
+		if (i == split)
+		{
+			strings.push_back(temp);
+			temp = "";
+		}
+		else
+			temp += i;
+	}
+	strings.push_back(temp);
+
+	return strings;
+}
+
 Server::returntype quit(Server::Args args)
 {
 	Server::returntype returnValue;
@@ -39,28 +60,31 @@ Server::returntype onConnect(Server::Args args)
 {
 	Server::returntype returnValue;
 	std::string content = args.message.content;
-	std::string splitAt = ":";
-	std::string users;
-	std::string ipAddress;
-	std::istringstream ss(content);
-	std::string username;
-	std::string ip;
-	std::string word;
 
-	do {
-		ss >> word;
+	std::vector<std::string> command = splitAt(content, ' ');
+	std::vector<std::string> commandArgs = splitAt(command.at(1), ':');
 
-		size_t pos = 0;
+	std::string username = commandArgs.at(0);
 
-		while ((pos = word.find(splitAt)) != std::string::npos) {
-			username = word.substr(0, pos);
-			word.erase(0, pos + splitAt.length());
-		}
-
-	} while (ss);
 	returnValue.usernames = username;
 
 	return returnValue;
+}
+
+Server::returntype kick(Server::Args args)
+{
+	Server::returntype returntype;
+
+	std::vector<std::string> command = splitAt(args.message.content, ' ');
+
+	for (int i = 0; i < args.usernames.size(); i++)
+		if (args.usernames.at(i) == command.at(0))
+		{
+			returntype.pos = i;
+			break;
+		}
+
+	return returntype;
 }
 
 std::string recvToString(char* buf)
@@ -112,15 +136,17 @@ int main()
 {
 	Server::Messages message;
 	Server::Command QuitCommand("quit", quit, true);
+	Server::Command KickCommand("kick", kick, true);
 	Server::Command ConnectCommand("connect", onConnect);
 	Server::Command ActiveUserCommand("active", getUsers);
 
-	std::vector<std::string> oped = { "Pizzarules668" };
+	std::vector<std::string> oped = { "Colin" };
 	std::vector<std::string> users;
 	std::vector<std::string> ip;
 	std::vector<std::string> messages;
 
-	std::string noAdmin = "You are not an admin you can not run that command";
+	std::string notAdmin = "You are not an admin you can not run that command\n or that is not a valid command";
+	std::string kicked = "You have been kicked by an admin";
 
 	WSADATA wsData;
 	WORD ver = MAKEWORD(2, 2);
@@ -195,6 +221,7 @@ int main()
 				if (message.command)
 				{
 					Server::returntype quitReturn = QuitCommand.checkForCommand(args);
+					Server::returntype kickReturn = KickCommand.checkForCommand(args);
 					Server::returntype connectReturn = ConnectCommand.checkForCommand(args);
 					Server::returntype activeReturn = ActiveUserCommand.checkForCommand(args);
 
@@ -210,9 +237,31 @@ int main()
 							send(sock, line.c_str(), line.size() + 1, 0);
 					}
 
-					else if (!quitReturn.ran)
+					else if (kickReturn.ran)
 					{
-						send(sock, noAdmin.c_str(), noAdmin.size() + 1, 0);
+						int socketCount = select(0, &copy, nullptr, nullptr, nullptr);
+
+						for (int x = 0; x < socketCount; x++)
+						{
+							SOCKET socket = copy.fd_array[x];
+
+							std::cout << kickReturn.pos << std::endl;
+							std::cout << ip.at(kickReturn.pos) << std::endl;
+							std::cout << getIP(socket) << "==" << ip.at(kickReturn.pos) << std::endl;
+
+							if (getIP(socket) == ip.at(kickReturn.pos))
+							{
+								send(socket, kicked.c_str(), kicked.size() + 1, 0);
+
+								closesocket(socket);
+								FD_CLR(socket, &master);
+							}
+						}
+					}
+
+					else if (quitReturn.ran)
+					{
+						send(sock, notAdmin.c_str(), notAdmin.size() + 1, 0);
 					}
 				}
 
