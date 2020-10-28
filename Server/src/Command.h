@@ -15,6 +15,7 @@ namespace Server
 		std::vector<std::string> usernames;
 		std::vector<std::string> ipAddress;
 		std::vector<std::string> oped;
+
 		std::string ranByUser;
 
 		Messages message;
@@ -25,6 +26,8 @@ namespace Server
 	{
 		std::string usernames;
 		std::string ipAddress;
+
+		int pos = 0;
 
 		bool ran = false;
 	};
