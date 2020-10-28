@@ -72,36 +72,55 @@ std::string recvToString(char* buf)
 	return strOut;
 }
 
-std::string ipFromSock(SOCKET sock)
+std::string getIP(SOCKET sock)
 {
 	sockaddr_in addr;
 	int addrSize = sizeof(addr);
 	char addrIP[INET_ADDRSTRLEN];
+	char addrPORT[INET_ADDRSTRLEN];
 	std::string addrIPString;
+	std::string addrPORTString;
 
 	getpeername(sock, (sockaddr*)&addr, &addrSize);
 	inet_ntop(AF_INET, &(addr.sin_addr), addrIP, INET_ADDRSTRLEN);
 
 	for (char i : addrIP)
 		if (addrIP == " ")
+		{
+			std::cout << addrIPString;
 			break;
+		}
 		else
-			addrIPString += i;
+			addrIPString + i;
 
 	return addrIPString;
+}
+
+std::string getUser(SOCKET sock, std::vector<std::string> usernames, std::vector<std::string> ips)
+{
+	std::string ip = getIP(sock);
+	std::string user;
+
+	for (int i = 0; i < usernames.size(); i++)
+		if (ips.at(i) == ip)
+			user = usernames.at(i);
+
+	return user;
 }
 
 int main()
 {
 	Server::Messages message;
-	Server::Command QuitCommand("quit", quit);
+	Server::Command QuitCommand("quit", quit, true);
 	Server::Command ConnectCommand("connect", onConnect);
 	Server::Command ActiveUserCommand("active", getUsers);
 
-	std::vector<std::string> oped = { "Colin" };
+	std::vector<std::string> oped = { "Pizzarules668" };
 	std::vector<std::string> users;
 	std::vector<std::string> ip;
 	std::vector<std::string> messages;
+
+	std::string noAdmin = "You are not an admin you can not run that command";
 
 	WSADATA wsData;
 	WORD ver = MAKEWORD(2, 2);
@@ -152,7 +171,7 @@ int main()
 
 				if (client != INVALID_SOCKET)
 				{
-					std::string addrIP = ipFromSock(client);
+					std::string addrIP = getIP(client);
 
 					ip.push_back(addrIP);
 				}
@@ -168,7 +187,8 @@ int main()
 				message.content = recvToString(buf);
 				message.process();
 
-				Server::Args args(users, ip, oped, message);
+				Server::Args args(users, ip, oped, message, getUser(sock, users, ip));
+				std::cout << getUser(sock, users, ip) << std::endl;
 
 				std::cout << message.content << std::endl;
 
@@ -184,14 +204,21 @@ int main()
 						std::cout << connectReturn.usernames << std::endl;
 					}
 
-					if (activeReturn.ran)
+					else if (activeReturn.ran) 
+					{
 						for (std::string line : users)
 							send(sock, line.c_str(), line.size() + 1, 0);
+					}
+
+					else if (!quitReturn.ran)
+					{
+						send(sock, noAdmin.c_str(), noAdmin.size() + 1, 0);
+					}
 				}
 
 				if (bytesIn <= 0)
 				{
-					std::string addrIP = ipFromSock(sock);
+					std::string addrIP = getIP(sock);
 
 					for (int i = 0; i < ip.size(); i++)
 					{
