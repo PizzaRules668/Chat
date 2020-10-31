@@ -7,6 +7,7 @@ Put The IP address of the server you want to connect to in the config.txt. The c
 
 ### Commands
 ```
+/dm user message - Send a message only to one user
 /active - Tell what users are online
 /kick username -  Kick a user from the server - You need to be admin
 /quit - Stops the server - You need to be admin
