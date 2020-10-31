@@ -87,6 +87,24 @@ Server::returntype kick(Server::Args args)
 	return returntype;
 }
 
+Server::returntype dm(Server::Args args)
+{
+	Server::returntype returntype;
+
+	std::vector<std::string> command = splitAt(args.message.content, ' ');
+
+	for (int i = 0; i < args.usernames.size(); i++)
+		if (args.usernames.at(i) == command.at(0))
+		{
+			returntype.pos = i;
+			break;
+		}
+
+	returntype.message = command.at(2);
+
+	return returntype;
+}
+
 std::string recvToString(char* buf)
 {
 	std::ostringstream ss;
@@ -135,6 +153,7 @@ std::string getUser(SOCKET sock, std::vector<std::string> usernames, std::vector
 int main()
 {
 	Server::Messages message;
+	Server::Command DmCommand("dm", dm);
 	Server::Command QuitCommand("quit", quit, true);
 	Server::Command KickCommand("kick", kick, true);
 	Server::Command ConnectCommand("connect", onConnect);
@@ -220,6 +239,7 @@ int main()
 
 				if (message.command)
 				{
+					Server::returntype dmReturn = DmCommand.checkForCommand(args);
 					Server::returntype quitReturn = QuitCommand.checkForCommand(args);
 					Server::returntype kickReturn = KickCommand.checkForCommand(args);
 					Server::returntype connectReturn = ConnectCommand.checkForCommand(args);
@@ -255,6 +275,20 @@ int main()
 
 								closesocket(socket);
 								FD_CLR(socket, &master);
+							}
+						}
+					}
+
+					else if (dmReturn.ran)
+					{
+						for (int x = 0; x < copy.fd_count; x++)
+						{
+							if (getIP(copy.fd_array[x]) == ip.at(dmReturn.pos))
+							{
+								SOCKET socket = copy.fd_array[x];
+
+								std::string message = "You got a DM from:" + getUser(sock, users, ip) + " : " + dmReturn.message;
+								send(socket, message.c_str(), message.size() + 1, 0);
 							}
 						}
 					}

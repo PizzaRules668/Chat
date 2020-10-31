@@ -26,6 +26,7 @@ namespace Server
 	{
 		std::string usernames;
 		std::string ipAddress;
+		std::string message;
 
 		int pos = 0;
 
